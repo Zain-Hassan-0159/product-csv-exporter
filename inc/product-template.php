@@ -39,10 +39,16 @@ function periodAfterLimit($short_Desc){
 
 $counter = 1;
 $array = [];
-$array[0] = array('ean', 'locale', 'kaufland_category', 'title', 'short_description', 'description', 'picture', 'manufacturer', 'content_volume', 'cosmetics_ingredients', 'weight');
+if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
+  $array[0] = array('ean', 'locale', 'category', 'title', 'short_description', 'description', 'picture', 'manufacturer', 'content_volume', 'cosmetics_ingredients', 'weight');
+}elseif(isset($_GET['csv']) && $_GET['csv'] === "small_columns" ){
+  $array[0] = array('ean', 'condition', 'price', 'price_cs', 'currency', 'handling_time', 'count');
+}
 
-//if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
+
+if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
   foreach($products as $product){
+    if(!empty(woocommerce_get_product_terms($product->id, 'pa_kaufland-category', 'names'))){
       // ean
       $ean = '';
       // locale
@@ -64,23 +70,27 @@ $array[0] = array('ean', 'locale', 'kaufland_category', 'title', 'short_descript
       // short_description
       $short_Desc = $product->short_description;
       $short_Desc = $short_Desc === "" ? periodAfterLimit(strip_tags(my_fix_content($product->description))) : $short_Desc;
+      $short_Desc = str_replace(array("\r","\n"),"",$short_Desc);
+      $short_Desc = strval(trim($short_Desc));
 
       // description
       $desc = strip_tags(my_fix_content($product->description));
-  
-  
+      $desc = str_replace(array("\r","\n"),"",$desc);
+      $desc = strval(trim($desc));
+
+
       // picture
       $image_id = $product->image_id;
       $imgurldesktop = wp_get_attachment_image_url( $image_id, '' );
       // manufacturer
-      $manfacturer = "Nutracosmetic GmbH";
+      $manfacturer = "Atlantis Wellness Duft Natur";
       // content_volume
       $content_volume = "";
       // cosmetics_ingredients
       $cosmetic_ingredients = get_field('ingredients', $product->id);
       // weight
       $weight = "";
-  
+
       // EAn for each variation
       if ( $product->is_type( 'variable' ) ) {
         $variations = $product->get_available_variations();
@@ -402,7 +412,7 @@ $array[0] = array('ean', 'locale', 'kaufland_category', 'title', 'short_descript
             default:
             $array[$counter][] = '';
         }
- 
+
         $array[$counter][] = $cosmetic_ingredients;
         // Weight
         switch ($title) {
@@ -509,43 +519,45 @@ $array[0] = array('ean', 'locale', 'kaufland_category', 'title', 'short_descript
             $array[$counter][] = '';
         }
       }
+    }
     $counter++;
   }
-//}
+}
 
 
    
 if(isset($_GET['csv']) && $_GET['csv'] === "small_columns"){
   foreach($products as $product){
-
-    $ean = '';
-    $condition = 100;
-    $price = str_replace(".", '', $product->price);
-    $price_cs = $product->price;
-    $currency = 'EUR';
-    $handling_time = 2;
-    $count = 30;
-    // EAn for each variation
-    if ( $product->is_type( 'variable' ) ) {
-      $variations = $product->get_available_variations();
-      foreach($variations as $variation){
-        $array[$counter][] = get_post_meta( $variation['variation_id'], '_ts_gtin', true );
+    if(!empty(woocommerce_get_product_terms($product->id, 'pa_kaufland-category', 'names'))){
+      $ean = '';
+      $condition = 100;
+      $price = str_replace(".", '', $product->price);
+      $price_cs = $product->price;
+      $currency = 'EUR';
+      $handling_time = 2;
+      $count = 50;
+      // EAn for each variation
+      if ( $product->is_type( 'variable' ) ) {
+        $variations = $product->get_available_variations();
+        foreach($variations as $variation){
+          $array[$counter][] = get_post_meta( $variation['variation_id'], '_ts_gtin', true );
+          $array[$counter][] = $condition;
+          $array[$counter][] = $price;
+          $array[$counter][] = $price_cs;
+          $array[$counter][] = $currency;
+          $array[$counter][] = $handling_time;
+          $array[$counter][] = $count;
+          $counter++;
+        }      
+      }elseif( $product->is_type( 'simple' ) ){
+        $array[$counter][] = get_post_meta( $product->get_id(), '_ts_gtin', true );
         $array[$counter][] = $condition;
         $array[$counter][] = $price;
         $array[$counter][] = $price_cs;
         $array[$counter][] = $currency;
         $array[$counter][] = $handling_time;
         $array[$counter][] = $count;
-        $counter++;
-      }      
-    }elseif( $product->is_type( 'simple' ) ){
-      $array[$counter][] = get_post_meta( $product->get_id(), '_ts_gtin', true );
-      $array[$counter][] = $condition;
-      $array[$counter][] = $price;
-      $array[$counter][] = $price_cs;
-      $array[$counter][] = $currency;
-      $array[$counter][] = $handling_time;
-      $array[$counter][] = $count;
+      }
     }
     
     $counter++;
@@ -563,7 +575,7 @@ function array2csv($array)
    ob_start();
    $df = fopen("php://output", 'w');
    foreach ($array as $row) {
-      fputcsv($df, $row);
+      fputcsv($df, $row, ',');
    }
    fclose($df);
    return ob_get_clean();
@@ -577,9 +589,7 @@ function download_send_headers($filename) {
   header("Last-Modified: {$now} GMT");
 
   // force download  
-  header("Content-Type: application/force-download");
-  header("Content-Type: application/octet-stream");
-  header("Content-Type: application/download");
+  header('Content-Type: application/csv');
 
   // disposition / encoding on response body
   header("Content-Disposition: attachment;filename={$filename}");
