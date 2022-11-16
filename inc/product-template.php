@@ -46,7 +46,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
 }
 
 
-if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
+ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
   foreach($products as $product){
     if(!empty(woocommerce_get_product_terms($product->id, 'pa_kaufland-category', 'names'))){
       // ean
@@ -69,7 +69,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
       $title = $product->name;
       // short_description
       $short_Desc = $product->short_description;
-      $short_Desc = $short_Desc === "" ? periodAfterLimit(strip_tags(my_fix_content($product->description))) : $short_Desc;
+      $short_Desc = $short_Desc === "" ? periodAfterLimit(strip_tags(my_fix_content($product->description))) : strip_tags($short_Desc);
       $short_Desc = str_replace(array("\r","\n"),"",$short_Desc);
       $short_Desc = strval(trim($short_Desc));
 
@@ -95,14 +95,14 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
       if ( $product->is_type( 'variable' ) ) {
         $variations = $product->get_available_variations();
         foreach($variations as $variation){
-          $array[$counter][] = get_post_meta( $variation['variation_id'], '_ts_gtin', true );
-          $array[$counter][] = $locale;
-          $array[$counter][] = $category;
-          $array[$counter][] = $title;
-          $array[$counter][] = $short_Desc;
-          $array[$counter][] = $desc;
-          $array[$counter][] = $imgurldesktop;
-          $array[$counter][] = $manfacturer;
+          $array[$category."_".$counter][] = get_post_meta( $variation['variation_id'], '_ts_gtin', true );
+          $array[$category."_".$counter][] = $locale;
+          $array[$category."_".$counter][] = $category;
+          $array[$category."_".$counter][] = $title;
+          $array[$category."_".$counter][] = $short_Desc;
+          $array[$category."_".$counter][] = $desc;
+          $array[$category."_".$counter][] = $imgurldesktop;
+          $array[$category."_".$counter][] = $manfacturer;
           $volumes = array_shift(woocommerce_get_product_terms($product->id, 'pa_gre', 'names'));
           if($volumes){
             switch ($volumes) {
@@ -112,7 +112,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
                 $int = (int) str_replace("-", "", filter_var(substr($volumes, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
                 $unit = 'g';
                 $value = $int . $unit;
-                $array[$counter][] = $value;
+                $array[$category."_".$counter][] = $value;
                 break;
                 case str_contains($volumes, '1000 g'):
                   $p1 = strpos($volumes, ' g');
@@ -120,7 +120,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
                   $int = (int) str_replace("-", "", filter_var(substr($volumes, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
                   $unit = 'g';
                   $value = $int . $unit;
-                  $array[$counter][] = $value;
+                  $array[$category."_".$counter][] = $value;
                   break;
                 case str_contains($volumes, '100 g'):
                   $p1 = strpos($volumes, ' g');
@@ -128,7 +128,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
                   $int = (int) str_replace("-", "", filter_var(substr($volumes, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
                   $unit = 'g';
                   $value = $int . $unit;
-                  $array[$counter][] = $value;
+                  $array[$category."_".$counter][] = $value;
                   break;
                 case str_contains($volumes, '50 g'):
                   $p1 = strpos($volumes, ' g');
@@ -136,7 +136,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
                   $int = (int) str_replace("-", "", filter_var(substr($volumes, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
                   $unit = 'g';
                   $value = $int . $unit;
-                  $array[$counter][] = $value;
+                  $array[$category."_".$counter][] = $value;
                   break;
                 case str_contains($volumes, '50g'):
                   $p1 = strpos($volumes, '0g');
@@ -144,7 +144,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
                   $int = (int) str_replace("-", "", filter_var(substr($volumes, $p2, 5), FILTER_SANITIZE_NUMBER_INT));
                   $unit = 'g';
                   $value = $int . $unit;
-                  $array[$counter][] = $value;
+                  $array[$category."_".$counter][] = $value;
                   break;
               case str_contains($volumes, ' g) '):
                 $p1 = strpos($volumes, ' g) ');
@@ -152,7 +152,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
                 $int = (int) str_replace("-", "", filter_var(substr($volumes, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
                 $unit = 'g';
                 $value = $int . $unit;
-                $array[$counter][] = $value;
+                $array[$category."_".$counter][] = $value;
                 break;
               case str_contains($volumes, ' ml '):
                 $p1 = strpos($volumes, ' ml ');
@@ -160,7 +160,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
                 $int = (int) str_replace("-", "", filter_var(substr($volumes, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
                 $unit = 'ml';
                 $value = $int . $unit;
-                $array[$counter][] = $value;
+                $array[$category."_".$counter][] = $value;
                 break;
               case str_contains($volumes, 'ml '):
                 $p1 = strpos($volumes, 'ml ');
@@ -168,7 +168,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
                 $int = (int) str_replace("-", "", filter_var(substr($volumes, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
                 $unit = 'ml';
                 $value = $int . $unit;
-                $array[$counter][] = $value;
+                $array[$category."_".$counter][] = $value;
                 break;
               case str_contains($volumes, '10 ml'):
                 $p1 = strpos($volumes, ' ml');
@@ -176,7 +176,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
                 $int = (int) str_replace("-", "", filter_var(substr($volumes, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
                 $unit = 'ml';
                 $value = $int . $unit;
-                $array[$counter][] = $value;
+                $array[$category."_".$counter][] = $value;
                 break;
               case str_contains($volumes, '30 ml'):
                 $p1 = strpos($volumes, ' ml');
@@ -184,7 +184,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
                 $int = (int) str_replace("-", "", filter_var(substr($volumes, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
                 $unit = 'ml';
                 $value = $int . $unit;
-                $array[$counter][] = $value;
+                $array[$category."_".$counter][] = $value;
                 break;
               case str_contains($volumes, '200 ml'):
                 $p1 = strpos($volumes, ' ml');
@@ -192,16 +192,16 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
                 $int = (int) str_replace("-", "", filter_var(substr($volumes, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
                 $unit = 'ml';
                 $value = $int . $unit;
-                $array[$counter][] = $value;
+                $array[$category."_".$counter][] = $value;
                 break;
                 default:
-                $array[$counter][] = '';
+                $array[$category."_".$counter][] = '';
             }
           }else{
-            $array[$counter][] = array_shift(woocommerce_get_product_terms($product->id, 'pa_gre', 'names'));
+            $array[$category."_".$counter][] = array_shift(woocommerce_get_product_terms($product->id, 'pa_gre', 'names'));
           }
           
-          $array[$counter][] = $cosmetic_ingredients;
+          $array[$category."_".$counter][] = $cosmetic_ingredients;
           if($volumes){
             switch ($volumes) {
               case str_contains($volumes, ' g '):
@@ -211,7 +211,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
                 $unit = 'kg';
                 $value = $int/1000;
                 $value = $value + 0.100;
-                $array[$counter][] = $value . $unit;
+                $array[$category."_".$counter][] = $value . $unit;
                 break;
                 case str_contains($volumes, '1000 g'):
                   $p1 = strpos($volumes, ' g');
@@ -220,7 +220,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
                   $unit = 'kg';
                   $value = $int/1000;
                   $value = $value + 0.100;
-                  $array[$counter][] = $value . $unit;
+                  $array[$category."_".$counter][] = $value . $unit;
                   break;
                 case str_contains($volumes, '100 g'):
                   $p1 = strpos($volumes, ' g');
@@ -229,7 +229,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
                   $unit = 'kg';
                   $value = $int/1000;
                   $value = $value + 0.100;
-                  $array[$counter][] = $value . $unit;
+                  $array[$category."_".$counter][] = $value . $unit;
                   break;
                 case str_contains($volumes, '50 g'):
                   $p1 = strpos($volumes, ' g');
@@ -238,7 +238,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
                   $unit = 'kg';
                   $value = $int/1000;
                   $value = $value + 0.100;
-                  $array[$counter][] = $value . $unit;
+                  $array[$category."_".$counter][] = $value . $unit;
                   break;
                 case str_contains($volumes, '50g'):
                   $p1 = strpos($volumes, '0g');
@@ -247,7 +247,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
                   $unit = 'kg';
                   $value = $int/1000;
                   $value = $value + 0.100;
-                  $array[$counter][] = $value . $unit;
+                  $array[$category."_".$counter][] = $value . $unit;
                   break;
               case str_contains($volumes, ' g) '):
                 $p1 = strpos($volumes, ' g) ');
@@ -256,7 +256,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
                 $unit = 'kg';
                 $value = $int/1000;
                 $value = $value + 0.100;
-                $array[$counter][] = $value . $unit;
+                $array[$category."_".$counter][] = $value . $unit;
                 break;
               case str_contains($volumes, ' ml '):
                 $p1 = strpos($volumes, ' ml ');
@@ -265,7 +265,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
                 $unit = 'kg';
                 $value = $int/1000;
                 $value = $value + 0.100;
-                $array[$counter][] = $value . $unit;
+                $array[$category."_".$counter][] = $value . $unit;
                 break;
               case str_contains($volumes, 'ml '):
                 $p1 = strpos($volumes, 'ml ');
@@ -274,7 +274,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
                 $unit = 'kg';
                 $value = $int/1000;
                 $value = $value + 0.100;
-                $array[$counter][] = $value . $unit;
+                $array[$category."_".$counter][] = $value . $unit;
                 break;
               case str_contains($volumes, '10 ml'):
                 $p1 = strpos($volumes, ' ml');
@@ -283,7 +283,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
                 $unit = 'kg';
                 $value = $int/1000;
                 $value = $value + 0.100;
-                $array[$counter][] = $value . $unit;
+                $array[$category."_".$counter][] = $value . $unit;
                 break;
               case str_contains($volumes, '30 ml'):
                 $p1 = strpos($volumes, ' ml');
@@ -292,7 +292,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
                 $unit = 'kg';
                 $value = $int/1000;
                 $value = $value + 0.100;
-                $array[$counter][] = $value . $unit;
+                $array[$category."_".$counter][] = $value . $unit;
                 break;
               case str_contains($volumes, '200 ml'):
                 $p1 = strpos($volumes, ' ml');
@@ -301,25 +301,25 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
                 $unit = 'kg';
                 $value = $int/1000;
                 $value = $value + 0.100;
-                $array[$counter][] = $value . $unit;
+                $array[$category."_".$counter][] = $value . $unit;
                 break;
                 default:
-                $array[$counter][] = '';
+                $array[$category."_".$counter][] = '';
             }
           }else{
-            $array[$counter][] = $weight;
+            $array[$category."_".$counter][] = $weight;
           }
           $counter++;
         }      
       }elseif( $product->is_type( 'simple' ) ){
-        $array[$counter][] = get_post_meta( $product->get_id(), '_ts_gtin', true );
-        $array[$counter][] = $locale;
-        $array[$counter][] = $category;
-        $array[$counter][] = $title;
-        $array[$counter][] = $short_Desc;
-        $array[$counter][] = $desc;
-        $array[$counter][] = $imgurldesktop;
-        $array[$counter][] = $manfacturer;
+        $array[$category."_".$counter][] = get_post_meta( $product->get_id(), '_ts_gtin', true );
+        $array[$category."_".$counter][] = $locale;
+        $array[$category."_".$counter][] = $category;
+        $array[$category."_".$counter][] = $title;
+        $array[$category."_".$counter][] = $short_Desc;
+        $array[$category."_".$counter][] = $desc;
+        $array[$category."_".$counter][] = $imgurldesktop;
+        $array[$category."_".$counter][] = $manfacturer;
         switch ($title) {
           case str_contains($title, ' g '):
             $p1 = strpos($title, ' g ');
@@ -327,7 +327,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
             $int = (int) str_replace("-", "", filter_var(substr($title, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
             $unit = 'g';
             $value = $int . $unit;
-            $array[$counter][] = $value;
+            $array[$category."_".$counter][] = $value;
             break;
             case str_contains($title, '1000 g'):
               $p1 = strpos($title, ' g');
@@ -335,7 +335,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
               $int = (int) str_replace("-", "", filter_var(substr($title, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
               $unit = 'g';
               $value = $int . $unit;
-              $array[$counter][] = $value;
+              $array[$category."_".$counter][] = $value;
               break;
             case str_contains($title, '100 g'):
               $p1 = strpos($title, ' g');
@@ -343,7 +343,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
               $int = (int) str_replace("-", "", filter_var(substr($title, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
               $unit = 'g';
               $value = $int . $unit;
-              $array[$counter][] = $value;
+              $array[$category."_".$counter][] = $value;
               break;
             case str_contains($title, '50 g'):
               $p1 = strpos($title, ' g');
@@ -351,7 +351,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
               $int = (int) str_replace("-", "", filter_var(substr($title, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
               $unit = 'g';
               $value = $int . $unit;
-              $array[$counter][] = $value;
+              $array[$category."_".$counter][] = $value;
               break;
             case str_contains($title, '50g'):
               $p1 = strpos($title, '0g');
@@ -359,7 +359,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
               $int = (int) str_replace("-", "", filter_var(substr($title, $p2, 5), FILTER_SANITIZE_NUMBER_INT));
               $unit = 'g';
               $value = $int . $unit;
-              $array[$counter][] = $value;
+              $array[$category."_".$counter][] = $value;
               break;
           case str_contains($title, ' g) '):
             $p1 = strpos($title, ' g) ');
@@ -367,7 +367,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
             $int = (int) str_replace("-", "", filter_var(substr($title, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
             $unit = 'g';
             $value = $int . $unit;
-            $array[$counter][] = $value;
+            $array[$category."_".$counter][] = $value;
             break;
           case str_contains($title, ' ml '):
             $p1 = strpos($title, ' ml ');
@@ -375,7 +375,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
             $int = (int) str_replace("-", "", filter_var(substr($title, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
             $unit = 'ml';
             $value = $int . $unit;
-            $array[$counter][] = $value;
+            $array[$category."_".$counter][] = $value;
             break;
           case str_contains($title, 'ml '):
             $p1 = strpos($title, 'ml ');
@@ -383,7 +383,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
             $int = (int) str_replace("-", "", filter_var(substr($title, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
             $unit = 'ml';
             $value = $int . $unit;
-            $array[$counter][] = $value;
+            $array[$category."_".$counter][] = $value;
             break;
           case str_contains($title, '10 ml'):
             $p1 = strpos($title, ' ml');
@@ -391,7 +391,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
             $int = (int) str_replace("-", "", filter_var(substr($title, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
             $unit = 'ml';
             $value = $int . $unit;
-            $array[$counter][] = $value;
+            $array[$category."_".$counter][] = $value;
             break;
           case str_contains($title, '30 ml'):
             $p1 = strpos($title, ' ml');
@@ -399,7 +399,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
             $int = (int) str_replace("-", "", filter_var(substr($title, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
             $unit = 'ml';
             $value = $int . $unit;
-            $array[$counter][] = $value;
+            $array[$category."_".$counter][] = $value;
             break;
           case str_contains($title, '200 ml'):
             $p1 = strpos($title, ' ml');
@@ -407,13 +407,13 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
             $int = (int) str_replace("-", "", filter_var(substr($title, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
             $unit = 'ml';
             $value = $int . $unit;
-            $array[$counter][] = $value;
+            $array[$category."_".$counter][] = $value;
             break;
             default:
-            $array[$counter][] = '';
+            $array[$category."_".$counter][] = '';
         }
 
-        $array[$counter][] = $cosmetic_ingredients;
+        $array[$category."_".$counter][] = $cosmetic_ingredients;
         // Weight
         switch ($title) {
           case str_contains($title, ' g '):
@@ -423,7 +423,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
             $unit = 'kg';
             $value = $int/1000;
             $value = $value + 0.100;
-            $array[$counter][] = $value . $unit;
+            $array[$category."_".$counter][] = $value . $unit;
             break;
             case str_contains($title, '1000 g'):
               $p1 = strpos($title, ' g');
@@ -432,7 +432,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
               $unit = 'kg';
               $value = $int/1000;
               $value = $value + 0.100;
-              $array[$counter][] = $value . $unit;
+              $array[$category."_".$counter][] = $value . $unit;
               break;
             case str_contains($title, '100 g'):
               $p1 = strpos($title, ' g');
@@ -441,7 +441,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
               $unit = 'kg';
               $value = $int/1000;
               $value = $value + 0.100;
-              $array[$counter][] = $value . $unit;
+              $array[$category."_".$counter][] = $value . $unit;
               break;
             case str_contains($title, '50 g'):
               $p1 = strpos($title, ' g');
@@ -450,7 +450,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
               $unit = 'kg';
               $value = $int/1000;
               $value = $value + 0.100;
-              $array[$counter][] = $value . $unit;
+              $array[$category."_".$counter][] = $value . $unit;
               break;
             case str_contains($title, '50g'):
               $p1 = strpos($title, '0g');
@@ -459,7 +459,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
               $unit = 'kg';
               $value = $int/1000;
               $value = $value + 0.100;
-              $array[$counter][] = $value . $unit;
+              $array[$category."_".$counter][] = $value . $unit;
               break;
           case str_contains($title, ' g) '):
             $p1 = strpos($title, ' g) ');
@@ -468,7 +468,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
             $unit = 'kg';
             $value = $int/1000;
             $value = $value + 0.100;
-            $array[$counter][] = $value . $unit;
+            $array[$category."_".$counter][] = $value . $unit;
             break;
           case str_contains($title, ' ml '):
             $p1 = strpos($title, ' ml ');
@@ -477,7 +477,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
             $unit = 'kg';
             $value = $int/1000;
             $value = $value + 0.100;
-            $array[$counter][] = $value . $unit;
+            $array[$category."_".$counter][] = $value . $unit;
             break;
           case str_contains($title, 'ml '):
             $p1 = strpos($title, 'ml ');
@@ -486,7 +486,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
             $unit = 'kg';
             $value = $int/1000;
             $value = $value + 0.100;
-            $array[$counter][] = $value . $unit;
+            $array[$category."_".$counter][] = $value . $unit;
             break;
           case str_contains($title, '10 ml'):
             $p1 = strpos($title, ' ml');
@@ -495,7 +495,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
             $unit = 'kg';
             $value = $int/1000;
             $value = $value + 0.100;
-            $array[$counter][] = $value . $unit;
+            $array[$category."_".$counter][] = $value . $unit;
             break;
           case str_contains($title, '30 ml'):
             $p1 = strpos($title, ' ml');
@@ -504,7 +504,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
             $unit = 'kg';
             $value = $int/1000;
             $value = $value + 0.100;
-            $array[$counter][] = $value . $unit;
+            $array[$category."_".$counter][] = $value . $unit;
             break;
           case str_contains($title, '200 ml'):
             $p1 = strpos($title, ' ml');
@@ -513,22 +513,30 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
             $unit = 'kg';
             $value = $int/1000;
             $value = $value + 0.100;
-            $array[$counter][] = $value . $unit;
+            $array[$category."_".$counter][] = $value . $unit;
             break;
             default:
-            $array[$counter][] = '';
+            $array[$category."_".$counter][] = '';
         }
       }
     }
     $counter++;
   }
-}
+ }
 
 
    
 if(isset($_GET['csv']) && $_GET['csv'] === "small_columns"){
   foreach($products as $product){
     if(!empty(woocommerce_get_product_terms($product->id, 'pa_kaufland-category', 'names'))){
+      $category = '';
+      $terms = woocommerce_get_product_terms($product->id, 'pa_kaufland-category', 'names'); // array
+      if(!empty($terms)){
+          foreach($terms as $term){
+              $category =  $term. "," .$category;
+          }
+      }
+      $category = substr_replace($category ,"",-1);
       $ean = '';
       $condition = 100;
       $price = str_replace(".", '', $product->price);
@@ -540,23 +548,23 @@ if(isset($_GET['csv']) && $_GET['csv'] === "small_columns"){
       if ( $product->is_type( 'variable' ) ) {
         $variations = $product->get_available_variations();
         foreach($variations as $variation){
-          $array[$counter][] = get_post_meta( $variation['variation_id'], '_ts_gtin', true );
-          $array[$counter][] = $condition;
-          $array[$counter][] = $price;
-          $array[$counter][] = $price_cs;
-          $array[$counter][] = $currency;
-          $array[$counter][] = $handling_time;
-          $array[$counter][] = $count;
+          $array[$category."_".$counter][] = get_post_meta( $variation['variation_id'], '_ts_gtin', true );
+          $array[$category."_".$counter][] = $condition;
+          $array[$category."_".$counter][] = $price;
+          $array[$category."_".$counter][] = $price_cs;
+          $array[$category."_".$counter][] = $currency;
+          $array[$category."_".$counter][] = $handling_time;
+          $array[$category."_".$counter][] = $count;
           $counter++;
         }      
       }elseif( $product->is_type( 'simple' ) ){
-        $array[$counter][] = get_post_meta( $product->get_id(), '_ts_gtin', true );
-        $array[$counter][] = $condition;
-        $array[$counter][] = $price;
-        $array[$counter][] = $price_cs;
-        $array[$counter][] = $currency;
-        $array[$counter][] = $handling_time;
-        $array[$counter][] = $count;
+        $array[$category."_".$counter][] = get_post_meta( $product->get_id(), '_ts_gtin', true );
+        $array[$category."_".$counter][] = $condition;
+        $array[$category."_".$counter][] = $price;
+        $array[$category."_".$counter][] = $price_cs;
+        $array[$category."_".$counter][] = $currency;
+        $array[$category."_".$counter][] = $handling_time;
+        $array[$category."_".$counter][] = $count;
       }
     }
     
@@ -565,7 +573,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "small_columns"){
 }
 
 
-
+ksort($array);
 function array2csv($array)
 {
    if (count($array) == 0) {
@@ -608,6 +616,7 @@ if(isset($_GET['csv']) && ($_GET['csv'] === "full_columns" || $_GET['csv'] === "
 }
 
 // echo "<pre>";
+// ksort($array);
 // print_r($array);
 
 ?>
