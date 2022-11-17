@@ -39,14 +39,15 @@ function periodAfterLimit($short_Desc){
 
 $counter = 1;
 $array = [];
+$heading = [];
 if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
-  $array[0] = array('ean', 'locale', 'category', 'title', 'short_description', 'description', 'picture', 'manufacturer', 'content_volume', 'cosmetics_ingredients', 'weight');
+  $heading = array('ean', 'locale', 'category', 'title', 'short_description', 'description', 'picture', 'manufacturer', 'content_volume', 'cosmetics_ingredients', 'weight');
 }elseif(isset($_GET['csv']) && $_GET['csv'] === "small_columns" ){
-  $array[0] = array('ean', 'condition', 'price', 'price_cs', 'currency', 'handling_time', 'count');
+  $heading = array('ean', 'condition', 'price', 'price_cs', 'currency', 'handling_time', 'count');
 }
 
 
- if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
+if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
   foreach($products as $product){
     if(!empty(woocommerce_get_product_terms($product->id, 'pa_kaufland-category', 'names'))){
       // ean
@@ -103,211 +104,62 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
           $array[$category."_".$counter][] = $desc;
           $array[$category."_".$counter][] = $imgurldesktop;
           $array[$category."_".$counter][] = $manfacturer;
-          $volumes = array_shift(woocommerce_get_product_terms($product->id, 'pa_gre', 'names'));
-          if($volumes){
-            switch ($volumes) {
-              case str_contains($volumes, ' g '):
-                $p1 = strpos($volumes, ' g ');
-                $p2 = $p1 - 4;
-                $int = (int) str_replace("-", "", filter_var(substr($volumes, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
-                $unit = 'g';
-                $value = $int . $unit;
+          $unit = get_post_meta( $product->id, '_unit', true );
+          if($unit){
+            switch ($unit) {
+              case 'kg':
+                $int = get_post_meta( $variation['variation_id'], '_weight', true ) * 1000;
+                $value = $int . 'g';
                 $array[$category."_".$counter][] = $value;
-                break;
-                case str_contains($volumes, '1000 g'):
-                  $p1 = strpos($volumes, ' g');
-                  $p2 = $p1 - 4;
-                  $int = (int) str_replace("-", "", filter_var(substr($volumes, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
-                  $unit = 'g';
-                  $value = $int . $unit;
-                  $array[$category."_".$counter][] = $value;
-                  break;
-                case str_contains($volumes, '100 g'):
-                  $p1 = strpos($volumes, ' g');
-                  $p2 = $p1 - 4;
-                  $int = (int) str_replace("-", "", filter_var(substr($volumes, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
-                  $unit = 'g';
-                  $value = $int . $unit;
-                  $array[$category."_".$counter][] = $value;
-                  break;
-                case str_contains($volumes, '50 g'):
-                  $p1 = strpos($volumes, ' g');
-                  $p2 = $p1 - 4;
-                  $int = (int) str_replace("-", "", filter_var(substr($volumes, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
-                  $unit = 'g';
-                  $value = $int . $unit;
-                  $array[$category."_".$counter][] = $value;
-                  break;
-                case str_contains($volumes, '50g'):
-                  $p1 = strpos($volumes, '0g');
-                  $p2 = $p1 - 4;
-                  $int = (int) str_replace("-", "", filter_var(substr($volumes, $p2, 5), FILTER_SANITIZE_NUMBER_INT));
-                  $unit = 'g';
-                  $value = $int . $unit;
-                  $array[$category."_".$counter][] = $value;
-                  break;
-              case str_contains($volumes, ' g) '):
-                $p1 = strpos($volumes, ' g) ');
-                $p2 = $p1 - 4;
-                $int = (int) str_replace("-", "", filter_var(substr($volumes, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
-                $unit = 'g';
-                $value = $int . $unit;
+              break;
+              case 'g':
+                $int = get_post_meta( $variation['variation_id'], '_weight', true );
+                $value = $int . 'g';
                 $array[$category."_".$counter][] = $value;
-                break;
-              case str_contains($volumes, ' ml '):
-                $p1 = strpos($volumes, ' ml ');
-                $p2 = $p1 - 4;
-                $int = (int) str_replace("-", "", filter_var(substr($volumes, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
-                $unit = 'ml';
-                $value = $int . $unit;
+              break;
+              case 'ml':
+                $int = get_post_meta( $variation['variation_id'], '_weight', true );
+                $value = $int . 'ml';
                 $array[$category."_".$counter][] = $value;
-                break;
-              case str_contains($volumes, 'ml '):
-                $p1 = strpos($volumes, 'ml ');
-                $p2 = $p1 - 4;
-                $int = (int) str_replace("-", "", filter_var(substr($volumes, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
-                $unit = 'ml';
-                $value = $int . $unit;
+              break;
+              case 'l':
+                $int = (int) get_post_meta( $variation['variation_id'], '_weight', true ) * 1000;
+                $value = $int . 'ml';
                 $array[$category."_".$counter][] = $value;
-                break;
-              case str_contains($volumes, '10 ml'):
-                $p1 = strpos($volumes, ' ml');
-                $p2 = $p1 - 4;
-                $int = (int) str_replace("-", "", filter_var(substr($volumes, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
-                $unit = 'ml';
-                $value = $int . $unit;
-                $array[$category."_".$counter][] = $value;
-                break;
-              case str_contains($volumes, '30 ml'):
-                $p1 = strpos($volumes, ' ml');
-                $p2 = $p1 - 4;
-                $int = (int) str_replace("-", "", filter_var(substr($volumes, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
-                $unit = 'ml';
-                $value = $int . $unit;
-                $array[$category."_".$counter][] = $value;
-                break;
-              case str_contains($volumes, '200 ml'):
-                $p1 = strpos($volumes, ' ml');
-                $p2 = $p1 - 4;
-                $int = (int) str_replace("-", "", filter_var(substr($volumes, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
-                $unit = 'ml';
-                $value = $int . $unit;
-                $array[$category."_".$counter][] = $value;
-                break;
-                default:
-                $array[$category."_".$counter][] = '';
+              break;
             }
+            // $array[$category."_".$counter][] = get_post_meta( $variation['variation_id'], '_weight', true );
+            // $array[$category."_".$counter][] = get_post_meta( $product->id, '_unit', true );
           }else{
-            $array[$category."_".$counter][] = array_shift(woocommerce_get_product_terms($product->id, 'pa_gre', 'names'));
+            $array[$category."_".$counter][] = "";
           }
           
           $array[$category."_".$counter][] = $cosmetic_ingredients;
-          if($volumes){
-            switch ($volumes) {
-              case str_contains($volumes, ' g '):
-                $p1 = strpos($volumes, ' g ');
-                $p2 = $p1 - 4;
-                $int = (int) str_replace("-", "", filter_var(substr($volumes, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
-                $unit = 'kg';
-                $value = $int/1000;
-                $value = $value + 0.100;
-                $array[$category."_".$counter][] = $value . $unit;
-                break;
-                case str_contains($volumes, '1000 g'):
-                  $p1 = strpos($volumes, ' g');
-                  $p2 = $p1 - 4;
-                  $int = (int) str_replace("-", "", filter_var(substr($volumes, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
-                  $unit = 'kg';
-                  $value = $int/1000;
-                  $value = $value + 0.100;
-                  $array[$category."_".$counter][] = $value . $unit;
-                  break;
-                case str_contains($volumes, '100 g'):
-                  $p1 = strpos($volumes, ' g');
-                  $p2 = $p1 - 4;
-                  $int = (int) str_replace("-", "", filter_var(substr($volumes, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
-                  $unit = 'kg';
-                  $value = $int/1000;
-                  $value = $value + 0.100;
-                  $array[$category."_".$counter][] = $value . $unit;
-                  break;
-                case str_contains($volumes, '50 g'):
-                  $p1 = strpos($volumes, ' g');
-                  $p2 = $p1 - 4;
-                  $int = (int) str_replace("-", "", filter_var(substr($volumes, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
-                  $unit = 'kg';
-                  $value = $int/1000;
-                  $value = $value + 0.100;
-                  $array[$category."_".$counter][] = $value . $unit;
-                  break;
-                case str_contains($volumes, '50g'):
-                  $p1 = strpos($volumes, '0g');
-                  $p2 = $p1 - 4;
-                  $int = (int) str_replace("-", "", filter_var(substr($volumes, $p2, 5), FILTER_SANITIZE_NUMBER_INT));
-                  $unit = 'kg';
-                  $value = $int/1000;
-                  $value = $value + 0.100;
-                  $array[$category."_".$counter][] = $value . $unit;
-                  break;
-              case str_contains($volumes, ' g) '):
-                $p1 = strpos($volumes, ' g) ');
-                $p2 = $p1 - 4;
-                $int = (int) str_replace("-", "", filter_var(substr($volumes, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
-                $unit = 'kg';
-                $value = $int/1000;
-                $value = $value + 0.100;
-                $array[$category."_".$counter][] = $value . $unit;
-                break;
-              case str_contains($volumes, ' ml '):
-                $p1 = strpos($volumes, ' ml ');
-                $p2 = $p1 - 4;
-                $int = (int) str_replace("-", "", filter_var(substr($volumes, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
-                $unit = 'kg';
-                $value = $int/1000;
-                $value = $value + 0.100;
-                $array[$category."_".$counter][] = $value . $unit;
-                break;
-              case str_contains($volumes, 'ml '):
-                $p1 = strpos($volumes, 'ml ');
-                $p2 = $p1 - 4;
-                $int = (int) str_replace("-", "", filter_var(substr($volumes, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
-                $unit = 'kg';
-                $value = $int/1000;
-                $value = $value + 0.100;
-                $array[$category."_".$counter][] = $value . $unit;
-                break;
-              case str_contains($volumes, '10 ml'):
-                $p1 = strpos($volumes, ' ml');
-                $p2 = $p1 - 4;
-                $int = (int) str_replace("-", "", filter_var(substr($volumes, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
-                $unit = 'kg';
-                $value = $int/1000;
-                $value = $value + 0.100;
-                $array[$category."_".$counter][] = $value . $unit;
-                break;
-              case str_contains($volumes, '30 ml'):
-                $p1 = strpos($volumes, ' ml');
-                $p2 = $p1 - 4;
-                $int = (int) str_replace("-", "", filter_var(substr($volumes, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
-                $unit = 'kg';
-                $value = $int/1000;
-                $value = $value + 0.100;
-                $array[$category."_".$counter][] = $value . $unit;
-                break;
-              case str_contains($volumes, '200 ml'):
-                $p1 = strpos($volumes, ' ml');
-                $p2 = $p1 - 4;
-                $int = (int) str_replace("-", "", filter_var(substr($volumes, $p2, 4), FILTER_SANITIZE_NUMBER_INT));
-                $unit = 'kg';
-                $value = $int/1000;
-                $value = $value + 0.100;
-                $array[$category."_".$counter][] = $value . $unit;
-                break;
-                default:
-                $array[$category."_".$counter][] = '';
+          if($unit){
+            switch ($unit) {
+              case 'kg':
+                $int = get_post_meta( $variation['variation_id'], '_weight', true );
+                $value = $int . 'kg';
+                $array[$category."_".$counter][] = $value;
+              break;
+              case 'g':
+                $int = get_post_meta( $variation['variation_id'], '_weight', true )/1000;
+                $value = $int . 'kg';
+                $array[$category."_".$counter][] = $value;
+              break;
+              case 'ml':
+                $int = get_post_meta( $variation['variation_id'], '_weight', true )/1000;
+                $value = $int . 'kg';
+                $array[$category."_".$counter][] = $value;
+              break;
+              case 'l':
+                $int = get_post_meta( $variation['variation_id'], '_weight', true );
+                $value = $int . 'kg';
+                $array[$category."_".$counter][] = $value;
+              break;
             }
           }else{
-            $array[$category."_".$counter][] = $weight;
+            $array[$category."_".$counter][] = '';
           }
           $counter++;
         }      
@@ -522,7 +374,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "full_columns" ){
     }
     $counter++;
   }
- }
+}
 
 
    
@@ -574,7 +426,7 @@ if(isset($_GET['csv']) && $_GET['csv'] === "small_columns"){
 
 
 ksort($array);
-function array2csv($array)
+function array2csv($array, $heading)
 {
    if (count($array) == 0) {
      return null;
@@ -582,6 +434,7 @@ function array2csv($array)
    ob_end_clean();
    ob_start();
    $df = fopen("php://output", 'w');
+   fputcsv($df, $heading, ',');
    foreach ($array as $row) {
       fputcsv($df, $row, ',');
    }
@@ -611,12 +464,11 @@ if(isset($_GET['csv']) && ($_GET['csv'] === "full_columns" || $_GET['csv'] === "
   if($_GET['csv'] === "small_columns"){
     download_send_headers("data_export_small_" . date("Y-m-d") . ".csv");
   }
-  echo array2csv($array);
+  echo array2csv($array, $heading);
   die();
 }
 
 // echo "<pre>";
-// ksort($array);
 // print_r($array);
 
 ?>
