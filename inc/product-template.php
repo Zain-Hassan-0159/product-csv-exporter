@@ -391,8 +391,8 @@ if(isset($_GET['csv']) && $_GET['csv'] === "small_columns"){
       $category = substr_replace($category ,"",-1);
       $ean = '';
       $condition = 100;
-      $price = str_replace(".", '', $product->price);
-      $price_cs = $product->price;
+      $price_cs = number_format((float)$product->price, 2, '.', '');
+      $price = str_replace(".", '', $price_cs);
       $currency = 'EUR';
       $handling_time = 2;
       $count = 50;
